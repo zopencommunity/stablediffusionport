@@ -1,0 +1,22 @@
+{
+  "name": "stablediffusion",
+  "version": "1.0.0",
+  "description": "Stable Diffusion AI model for z/OS mainframe systems",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/yourusername/stablediffusionport",
+  "dependencies": {
+    "cmake": ">=3.15",
+    "clang": ">=14.0"
+  },
+  "build": {
+    "type": "cmake",
+    "configure_args": [
+      "-DCMAKE_C_COMPILER=clang",
+      "-DCMAKE_CXX_COMPILER=clang++",
+      "-DCMAKE_BUILD_TYPE=Release"
+    ]
+  },
+  "test": {
+    "command": "./build/bin/sd --help"
+  }
+}
