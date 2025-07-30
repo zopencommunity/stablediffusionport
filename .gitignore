@@ -85,3 +85,6 @@ core.*
 # debug information files
 *.dwo
 >>>>>>> 2ad65447052aa017033ad025cfb23893b17232d5
+build/
+log.STABLE/
+stable-diffusion
