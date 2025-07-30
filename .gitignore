@@ -8,10 +8,6 @@
 *.a
 *.lib
 
-# z/OS library hooks compiled files
-.zoslib_hooks/*.o
-.zoslib_hooks/*.obj
-
 # Other build artifacts
 *.out
 core.*
