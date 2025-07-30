@@ -1,0 +1,1205 @@
+From 4d68089c8ee21f06e35b49f796d72fbe95c80a36 Mon Sep 17 00:00:00 2001
+From: Vyoman Jain <75789232+VyoJ@users.noreply.github.com>
+Date: Fri, 27 Jun 2025 11:29:34 +0530
+Subject: [PATCH 01/11] Updated buildenv and zopen generated files
+
+---
+ README.md          | 11 ++++++-----
+ buildenv           | 11 ++++++-----
+ cicd-stable.groovy | 14 ++++++++++++++
+ cicd.groovy        |  4 ++--
+ 4 files changed, 28 insertions(+), 12 deletions(-)
+ create mode 100644 cicd-stable.groovy
+
+diff --git a/README.md b/README.md
+index 4277039..a65ca95 100644
+--- a/README.md
++++ b/README.md
+@@ -1,12 +1,14 @@
+-# Llamacpp
++[![Automatic version updates](https://github.com/zopencommunity/llama.cppport/actions/workflows/bump.yml/badge.svg)](https://github.com/ZOSOpenTools/llama.cppport/actions/workflows/bump.yml)
+ 
+-A C++ library for writing high-performance network applications
++# llama.cpp
++
++Enable AI inferencing on z/os
+ 
+ # Installation and Usage
+ 
+ Use the zopen package manager ([QuickStart Guide](https://zopen.community/#/Guides/QuickStart)) to install:
+ ```bash
+-zopen install llamacpp
++zopen install llama.cpp
+ ```
+ 
+ # Building from Source
+@@ -27,7 +29,6 @@ See the [zopen porting guide](https://zopen.community/#/Guides/Porting) for more
+ 
+ 
+ # Troubleshooting
+-TBD
+ 
+ # Contributing
+-Contributions are welcome! Please follow the [zopen contribution guidelines](https://github.com/zopencommunity/meta/blob/main/CONTRIBUTING.md).
++Contributions are welcome! Please follow the [zopen contribution guidelines](https://github.com/zopencommunity/meta/blob/main/CONTRIBUTING.md).
+\ No newline at end of file
+diff --git a/buildenv b/buildenv
+index 7a0dc30..3ca2c7f 100644
+--- a/buildenv
++++ b/buildenv
+@@ -1,9 +1,9 @@
+ export ZOPEN_BUILD_LINE="DEV"
+-export ZOPEN_STABLE_DEPS="zoslib make cmake"
++export ZOPEN_STABLE_DEPS="zoslib make cmake curl"
+ export ZOPEN_DEV_URL="https://github.com/ggerganov/llama.cpp.git"
+-export ZOPEN_DEV_DEPS="zoslib make cmake"
++export ZOPEN_DEV_DEPS="zoslib make cmake curl openssl libssh2 zlib libpsl minja"
+ export ZOPEN_CATEGORIES="ai"
+-export ZOPEN_DEV_TAG="master-9e232f0"
++export ZOPEN_DEV_TAG="b5610"
+ export ZOPEN_BUILD_LINE="DEV"
+ export ZOPEN_NAME="llamacpp-master"
+ export ZOPEN_RUNTIME_DEPS="ncurses"
+@@ -15,7 +15,7 @@ ln -s "llama.cpp" $ZOPEN_NAME
+ export ZOPEN_COMP="CLANG"
+ 
+ export ZOPEN_CONFIGURE="cmake"
+-export ZOPEN_CONFIGURE_OPTS="-B ../build --install-prefix \"\$ZOPEN_INSTALL_DIR/\" ."
++export ZOPEN_CONFIGURE_OPTS="-B ../build --install-prefix \"\$ZOPEN_INSTALL_DIR/\" -DCURL_LIBRARY=/data/zopen/usr/local/zopen/curl/curl/lib/libcurl.a -DCURL_INCLUDE_DIR=/data/zopen/usr/local/zopen/curl/curl/include -DBUILD_SHARED_LIBS_DEFAULT=OFF -DBUILD_SHARED_LIBS=OFF -DGGML_STATIC=ON -DGGML_BACKEND_DL=OFF -DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS -DBLAS_INCLUDE_DIRS=/usr/lpp/cbclib/include/openblas -DBLAS_LIBRARIES=/usr/lpp/cbclib/lib/libopenblas.so ."
+ 
+ export ZOPEN_MAKE="cmake"
+ export ZOPEN_MAKE_OPTS="--build ../build --parallel \$ZOPEN_NUM_JOBS --config Release"
+@@ -31,6 +31,7 @@ if false; then
+ fi
+ 
+ export ZOPEN_CHECK="skip"
++# export ZOPEN_CHECK_OPTS="-B build -DLLAMA_BUILD_TESTS=ON"
+ 
+ zopen_check_results()
+ {
+@@ -60,4 +61,4 @@ zopen_get_version()
+   # Modify to echo the version of your tool/library
+   # Rather than hardcoding the version, obtain the version by running the tool/library
+   echo "1.0.0"
+-}
++}
+\ No newline at end of file
+diff --git a/cicd-stable.groovy b/cicd-stable.groovy
+new file mode 100644
+index 0000000..538b985
+--- /dev/null
++++ b/cicd-stable.groovy
+@@ -0,0 +1,14 @@
++node('linux')
++{
++  stage ('Poll') {
++    checkout([
++      $class: 'GitSCM',
++      branches: [[name: '*/main']],
++      doGenerateSubmoduleConfigurations: false,
++      extensions: [],
++      userRemoteConfigs: [[url: 'https://github.com/zopencommunity/llamacppport.git']]])
++  }
++  stage('Build') {
++    build job: 'Port-Pipeline', parameters: [string(name: 'PORT_GITHUB_REPO', value: 'https://github.com/zopencommunity/llamacppport.git'), string(name: 'PORT_DESCRIPTION', value: 'Enable AI inferencing on z/os' ), string(name: 'BUILD_LINE', value: 'STABLE') ]
++  }
++}
+\ No newline at end of file
+diff --git a/cicd.groovy b/cicd.groovy
+index b54d708..024d5ac 100644
+--- a/cicd.groovy
++++ b/cicd.groovy
+@@ -9,6 +9,6 @@ node('linux')
+       userRemoteConfigs: [[url: 'https://github.com/zopencommunity/llamacppport.git']]])
+   }
+   stage('Build') {
+-    build job: 'Port-Pipeline', parameters: [string(name: 'PORT_GITHUB_REPO', value: 'https://github.com/zopencommunity/llamacppport.git'), string(name: 'PORT_DESCRIPTION', value: "Port of Facebook's LLaMA model in C/C++" )]
++    build job: 'Port-Pipeline', parameters: [string(name: 'PORT_GITHUB_REPO', value: 'https://github.com/zopencommunity/llamacppport.git'), string(name: 'PORT_DESCRIPTION', value: 'Enable AI inferencing on z/os' ), string(name: 'BUILD_LINE', value: 'DEV') ]
+   }
+-}
++}
+\ No newline at end of file
+
+From eaf2b5d08e3e8d047f3e73f33942b744644a7a82 Mon Sep 17 00:00:00 2001
+From: Vyoman Jain <75789232+VyoJ@users.noreply.github.com>
+Date: Fri, 27 Jun 2025 12:36:25 +0530
+Subject: [PATCH 02/11] Added ggml-cpu patches
+
+---
+ patches/ggml-cpu.c.patch   | 12 ++++++++
+ patches/ggml-cpu.cpp.patch | 62 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 74 insertions(+)
+ create mode 100644 patches/ggml-cpu.c.patch
+ create mode 100644 patches/ggml-cpu.cpp.patch
+
+diff --git a/patches/ggml-cpu.c.patch b/patches/ggml-cpu.c.patch
+new file mode 100644
+index 0000000..0592551
+--- /dev/null
++++ b/patches/ggml-cpu.c.patch
+@@ -0,0 +1,12 @@
++diff --git a/ggml/src/ggml-cpu/ggml-cpu.c b/ggml/src/ggml-cpu/ggml-cpu.c
++index c7426df..e074799 100644
++--- a/ggml/src/ggml-cpu/ggml-cpu.c
+++++ b/ggml/src/ggml-cpu/ggml-cpu.c
++@@ -17,7 +17,7 @@
++
++ #if defined(_MSC_VER) || defined(__MINGW32__)
++ #include <malloc.h> // using malloc.h with MSC/MINGW
++-#elif !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__)
+++#elif !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__MVS__)
++ #include <alloca.h>
++ #endif
+diff --git a/patches/ggml-cpu.cpp.patch b/patches/ggml-cpu.cpp.patch
+new file mode 100644
+index 0000000..81540ae
+--- /dev/null
++++ b/patches/ggml-cpu.cpp.patch
+@@ -0,0 +1,62 @@
++diff --git a/ggml/src/ggml-cpu/ggml-cpu.cpp b/ggml/src/ggml-cpu/ggml-cpu.cpp
++index e013e8b..6290b22 100644
++--- a/ggml/src/ggml-cpu/ggml-cpu.cpp
+++++ b/ggml/src/ggml-cpu/ggml-cpu.cpp
++@@ -33,6 +33,38 @@
++ #    include <sys/types.h>
++ #endif
++
+++#define CVT_PTR        0x10
+++#define CVTRCEP_OFFSET         0x490
+++#define RCEAFC_OFFSET  0x088
+++
+++typedef unsigned data_area_ptr_assign_type;
+++
+++typedef union {
+++    struct {
+++#if defined(_LP64)
+++        data_area_ptr_assign_type lower;
+++#endif
+++       data_area_ptr_assign_type assign;
+++    };
+++    char* deref;
+++} data_area_ptr;
+++
+++uint64_t get_free_memory(void) {
+++    uint64_t freeram;
+++    data_area_ptr cvt = {0};
+++    data_area_ptr rcep = {0};
+++    cvt.assign = *(data_area_ptr_assign_type*)(CVT_PTR);
+++    rcep.assign = *(data_area_ptr_assign_type*)(cvt.deref + CVTRCEP_OFFSET);
+++    freeram = (uint64_t)*((uint32_t*)(rcep.deref + RCEAFC_OFFSET)) * 4096;
+++
+++    return freeram;
+++}
+++
+++uint64_t get_total_memory(void) {
+++    /* Use CVTRLSTG to get the size of actual real storage online at IPL in K. */
+++    return (uint64_t)((int)((char *__ptr32 *__ptr32 *)0)[4][214]) * 1024;
+++}
+++
++ // ggml-backend interface
++
++ std::vector<ggml_backend_buffer_type_t>& ggml_backend_cpu_get_extra_buffers_type() {
++@@ -43,7 +75,7 @@ std::vector<ggml_backend_buffer_type_t>& ggml_backend_cpu_get_extra_buffers_type
++         if (ggml_backend_amx_buffer_type()) {
++             bufts.push_back(ggml_backend_amx_buffer_type());
++         }
++-#endif
+++#endif
++
++ #ifdef GGML_USE_CPU_KLEIDIAI
++         if (ggml_backend_cpu_kleidiai_buffer_type()) {
++@@ -340,6 +372,9 @@ static void ggml_backend_cpu_device_get_memory(ggml_backend_dev_t dev, size_t *
++     GlobalMemoryStatusEx(&status);
++     *total = status.ullTotalPhys;
++     *free = status.ullAvailPhys;
+++#elifdef __MVS__
+++    *total = get_total_memory();
+++    *free = get_free_memory();
++ #else
++     long pages = sysconf(_SC_PHYS_PAGES);
++     long page_size = sysconf(_SC_PAGE_SIZE);
+\ No newline at end of file
+
+From 868dbf6a9d67f3d82594ff9460a507e7232cfc0e Mon Sep 17 00:00:00 2001
+From: namritha-maddali <namritha.maddali@gmail.com>
+Date: Fri, 27 Jun 2025 12:43:58 +0530
+Subject: [PATCH 03/11] added llama-context patch
+
+---
+ patches/llama-context.cpp.patch | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+ create mode 100644 patches/llama-context.cpp.patch
+
+diff --git a/patches/llama-context.cpp.patch b/patches/llama-context.cpp.patch
+new file mode 100644
+index 0000000..d23b8b5
+--- /dev/null
++++ b/patches/llama-context.cpp.patch
+@@ -0,0 +1,28 @@
++diff --git a/src/llama-context.cpp b/src/llama-context.cpp
++index c29fe7e..040cb64 100644
++--- a/src/llama-context.cpp
+++++ b/src/llama-context.cpp
++@@ -1212,7 +1212,10 @@ int llama_context::decode(llama_batch & inp_batch) {
++                     }
++                 }
++             }
++-            std::fill(output_ids.begin(), output_ids.end(), -1);
+++            // std::fill(output_ids.begin(), output_ids.end(), -1);
+++           for (auto& id : output_ids) {
+++               id = -1;
+++           }
++             for (int32_t i = 0; i < n_outputs; ++i) {
++                 output_ids[out_ids[i]] = i;
++             }
++@@ -1297,7 +1300,10 @@ int32_t llama_context::output_reserve(int32_t n_outputs) {
++     embd   = has_embd   ? output_base + logits_size : nullptr;
++
++     // set all ids as invalid (negative)
++-    std::fill(output_ids.begin(), output_ids.end(), -1);
+++    // std::fill(output_ids.begin(), output_ids.end(), -1);
+++    for (auto& id : output_ids) {
+++       id = -1;
+++    }
++
++     this->n_outputs     = 0;
++     this->n_outputs_max = n_outputs_max;
+\ No newline at end of file
+
+From d78f8f3f43f85ec90d7a48bc01226bf083b2d795 Mon Sep 17 00:00:00 2001
+From: namritha-maddali <namritha.maddali@gmail.com>
+Date: Fri, 27 Jun 2025 12:44:16 +0530
+Subject: [PATCH 04/11] added miniaudio.h patch
+
+---
+ patches/miniaudio.h.patch | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 patches/miniaudio.h.patch
+
+diff --git a/patches/miniaudio.h.patch b/patches/miniaudio.h.patch
+new file mode 100644
+index 0000000..0b3a155
+--- /dev/null
++++ b/patches/miniaudio.h.patch
+@@ -0,0 +1,24 @@
++diff --git a/vendor/miniaudio/miniaudio.h b/vendor/miniaudio/miniaudio.h
++index c74bebe..72cbafd 100644
++--- a/vendor/miniaudio/miniaudio.h
+++++ b/vendor/miniaudio/miniaudio.h
++@@ -3873,8 +3873,8 @@ typedef ma_uint16 wchar_t;
++     #define MA_POSIX
++
++     /*
++-    Use the MA_NO_PTHREAD_IN_HEADER option at your own risk. This is intentionally undocumented.
++-    You can use this to avoid including pthread.h in the header section. The downside is that it
+++##    Use the MA_NO_PTHREAD_IN_HEADER option at your own risk. This is intentionally undocumented.
+++    You can use this to avoid including pthread.h in the header section. The downside is that it##
++     results in some fixed sized structures being declared for the various types that are used in
++     miniaudio. The risk here is that these types might be too small for a given platform. This
++     risk is yours to take and no support will be offered if you enable this option.
++@@ -16176,7 +16176,7 @@ static ma_result ma_thread_create__posix(ma_thread* pThread, ma_thread_priority
++     int result;
++     pthread_attr_t* pAttr = NULL;
++
++-#if !defined(__EMSCRIPTEN__) && !defined(__3DS__)
+++#if !defined(__EMSCRIPTEN__) && !defined(__3DS__) && !defined(__MVS__)
++     /* Try setting the thread priority. It's not critical if anything fails here. */
++     pthread_attr_t attr;
++     if (pthread_attr_init(&attr) == 0) {
+\ No newline at end of file
+
+From 0b60fdb9d80c590f4c469e1dbcae53db4664cddd Mon Sep 17 00:00:00 2001
+From: namritha-maddali <namritha.maddali@gmail.com>
+Date: Fri, 27 Jun 2025 12:44:32 +0530
+Subject: [PATCH 05/11] added stb_image.h patch
+
+---
+ patches/stb_image.h.patch | 60 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
+ create mode 100644 patches/stb_image.h.patch
+
+diff --git a/patches/stb_image.h.patch b/patches/stb_image.h.patch
+new file mode 100644
+index 0000000..ea445df
+--- /dev/null
++++ b/patches/stb_image.h.patch
+@@ -0,0 +1,60 @@
++diff --git a/vendor/stb/stb_image.h b/vendor/stb/stb_image.h
++index 9eedabe..92d5251 100644
++--- a/vendor/stb/stb_image.h
+++++ b/vendor/stb/stb_image.h
++@@ -620,6 +620,10 @@ STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const ch
++    #define stbi_inline __forceinline
++ #endif
++
+++#ifdef __MVS__
+++   #define STBI_NO_THREAD_LOCALS
+++#endif
+++
++ #ifndef STBI_NO_THREAD_LOCALS
++    #if defined(__cplusplus) &&  __cplusplus >= 201103L
++       #define STBI_THREAD_LOCAL       thread_local
++@@ -721,6 +725,10 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
++ #define STBI_NO_SIMD
++ #endif
++
+++#if defined(__MVS__)
+++#include <zos-tls.h>
+++#endif
+++
++ #if !defined(STBI_NO_SIMD) && (defined(STBI__X86_TARGET) || defined(STBI__X64_TARGET))
++ #define STBI_SSE2
++ #include <emmintrin.h>
++@@ -963,11 +971,33 @@ static int      stbi__pnm_info(stbi__context *s, int *x, int *y, int *comp);
++ static int      stbi__pnm_is16(stbi__context *s);
++ #endif
++
+++#if defined(__MVS__)
+++static __tlssim<const char*> stbi__g_failure_reason_tls("");
+++#define stbi__g_failure_reason (*stbi__g_failure_reason_tls.access())
+++
+++#ifndef STBI_NO_THREAD_LOCALS
+++static __tlssim<int> stbi__vertically_flip_on_load_local_tls(0);
+++static __tlssim<int> stbi__vertically_flip_on_load_set_tls(0);
+++static __tlssim<int> stbi__unpremultiply_on_load_local_tls(0);
+++static __tlssim<int> stbi__unpremultiply_on_load_set_tls(0);
+++static __tlssim<int> stbi__de_iphone_flag_local_tls(0);
+++static __tlssim<int> stbi__de_iphone_flag_set_tls(0);
+++
+++#define stbi__vertically_flip_on_load_local (*stbi__vertically_flip_on_load_local_tls.access())
+++#define stbi__vertically_flip_on_load_set (*stbi__vertically_flip_on_load_set_tls.access())
+++#define stbi__unpremultiply_on_load_local (*stbi__unpremultiply_on_load_local_tls.access())
+++#define stbi__unpremultiply_on_load_set (*stbi__unpremultiply_on_load_set_tls.access())
+++#define stbi__de_iphone_flag_local (*stbi__de_iphone_flag_local_tls.access())
+++#define stbi__de_iphone_flag_set (*stbi__de_iphone_flag_set_tls.access())
+++#endif
+++
+++#else
++ static
++ #ifdef STBI_THREAD_LOCAL
++ STBI_THREAD_LOCAL
++ #endif
++ const char *stbi__g_failure_reason;
+++#endif
++
++ STBIDEF const char *stbi_failure_reason(void)
++ {
+\ No newline at end of file
+
+From cbe0d62638131bbb7701a9646296ddf7ca762ad4 Mon Sep 17 00:00:00 2001
+From: Charansaivaddi <charansaivaddi@gmail.com>
+Date: Fri, 27 Jun 2025 12:54:06 +0530
+Subject: [PATCH 06/11] Added common.cpp patch
+
+---
+ patches/common.cpp.patch | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+ create mode 100644 patches/common.cpp.patch
+
+diff --git a/patches/common.cpp.patch b/patches/common.cpp.patch
+new file mode 100644
+index 0000000..872bd9f
+--- /dev/null
++++ b/patches/common.cpp.patch
+@@ -0,0 +1,13 @@
++diff --git a/common/common.cpp b/common/common.cpp
++index 4cc40ed..234ad95 100644
++--- a/common/common.cpp
+++++ b/common/common.cpp
++@@ -851,7 +851,7 @@ std::string fs_get_cache_directory() {
++     if (getenv("LLAMA_CACHE")) {
++         cache_directory = std::getenv("LLAMA_CACHE");
++     } else {
++-#if defined(__linux__) || defined(__FreeBSD__) || defined(_AIX) || defined(__OpenBSD__)
+++#if defined(__linux__) || defined(__FreeBSD__) || defined(_AIX) || defined(__OpenBSD__) || defined(__MVS__)
++         if (std::getenv("XDG_CACHE_HOME")) {
++             cache_directory = std::getenv("XDG_CACHE_HOME");
++         } else {
+
+From c52843e8dc40fede78dbb023d1084d75e7ee17ce Mon Sep 17 00:00:00 2001
+From: Charansaivaddi <charansaivaddi@gmail.com>
+Date: Fri, 27 Jun 2025 12:54:34 +0530
+Subject: [PATCH 07/11] Added arg.cpp patch
+
+---
+ patches/arg.cpp.patch | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+ create mode 100644 patches/arg.cpp.patch
+
+diff --git a/patches/arg.cpp.patch b/patches/arg.cpp.patch
+new file mode 100644
+index 0000000..1e35802
+--- /dev/null
++++ b/patches/arg.cpp.patch
+@@ -0,0 +1,13 @@
++diff --git a/common/arg.cpp b/common/arg.cpp
++index 0d0daa3..423daea 100644
++--- a/common/arg.cpp
+++++ b/common/arg.cpp
++@@ -195,6 +195,8 @@ bool common_has_curl() {
++ #   endif
++ #elif defined(_AIX)
++ #include <sys/limits.h>
+++#elif defined(__MVS__)
+++#include <limits.h>
++ #else
++ #include <sys/syslimits.h>
++ #endif
+
+From 1269489bd6402a896255fe19ec85d98c07b35f8d Mon Sep 17 00:00:00 2001
+From: Charansaivaddi <charansaivaddi@gmail.com>
+Date: Fri, 27 Jun 2025 12:55:08 +0530
+Subject: [PATCH 08/11] Added ggml-backend-reg.cpp patch
+
+---
+ patches/ggml-backend-reg.cpp.patch | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+ create mode 100644 patches/ggml-backend-reg.cpp.patch
+
+diff --git a/patches/ggml-backend-reg.cpp.patch b/patches/ggml-backend-reg.cpp.patch
+new file mode 100644
+index 0000000..964827c
+--- /dev/null
++++ b/patches/ggml-backend-reg.cpp.patch
+@@ -0,0 +1,15 @@
++diff --git a/ggml/src/ggml-backend-reg.cpp b/ggml/src/ggml-backend-reg.cpp
++index 405d8e3..b3682a9 100644
++--- a/ggml/src/ggml-backend-reg.cpp
+++++ b/ggml/src/ggml-backend-reg.cpp
++@@ -556,7 +556,9 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
++ }
++
++ void ggml_backend_load_all() {
++-    ggml_backend_load_all_from_path(nullptr);
+++#ifdef GGML_BACKEND_DL
+++     ggml_backend_load_all_from_path(nullptr);
+++#endif
++ }
++
++ void ggml_backend_load_all_from_path(const char * dir_path) {
+
+From 53d5ac73f0866c2f50452b7cb3de9f3d8e5c0516 Mon Sep 17 00:00:00 2001
+From: Neha S <123626913+N3haS@users.noreply.github.com>
+Date: Fri, 27 Jun 2025 13:47:40 +0530
+Subject: [PATCH 09/11] Added ggml.c.patch, httplib.h.patch and LICENSE
+
+---
+ patches/LICENSE         |   6 +-
+ patches/ggml.c.patch    |  29 +++++++
+ patches/httplib.h.patch | 169 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 200 insertions(+), 4 deletions(-)
+ create mode 100644 patches/ggml.c.patch
+ create mode 100644 patches/httplib.h.patch
+
+diff --git a/patches/LICENSE b/patches/LICENSE
+index 8952dc2..c5904b5 100644
+--- a/patches/LICENSE
++++ b/patches/LICENSE
+@@ -1,4 +1,2 @@
+-"BSD 2-Clause ""Simplified"" License"
+-"BSD 3-Clause ""New"" or ""Revised"" License"
+-View license contents at "https://api.github.com/licenses/bsd-2-clause"
+-"https://api.github.com/licenses/bsd-3-clause"
++"Apache License 2.0"
++View license contents at "https://api.github.com/licenses/apache-2.0"
+diff --git a/patches/ggml.c.patch b/patches/ggml.c.patch
+new file mode 100644
+index 0000000..313b3ca
+--- /dev/null
++++ b/patches/ggml.c.patch
+@@ -0,0 +1,29 @@
++diff --git a/ggml/src/ggml.c b/ggml/src/ggml.c
++index 196b7b8..e66cc5e 100644
++--- a/ggml/src/ggml.c
+++++ b/ggml/src/ggml.c
++@@ -16,7 +16,7 @@
++ 
++ #if defined(_MSC_VER) || defined(__MINGW32__)
++ #include <malloc.h> // using malloc.h with MSC/MINGW
++-#elif !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__)
+++#elif !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__MVS__)
++ #include <alloca.h>
++ #endif
++ 
++@@ -287,6 +287,15 @@ void * ggml_aligned_malloc(size_t size) {
++ 
++ #if defined(_MSC_VER) || defined(__MINGW32__)
++     return _aligned_malloc(size, alignment);
+++#elif defined(__MVS__)
+++    void * aligned_memory = NULL;
+++    if (size ==0)
+++	    size = 1;
+++    aligned_memory = malloc(size);
+++    int result = 0;
+++    if (aligned_memory == NULL)
+++	    result = errno;
+++    return aligned_memory;
++ #else
++     if (size == 0) {
++         GGML_LOG_WARN("Behavior may be unexpected when allocating 0 bytes for ggml_aligned_malloc!\n");
+diff --git a/patches/httplib.h.patch b/patches/httplib.h.patch
+new file mode 100644
+index 0000000..6f0f621
+--- /dev/null
++++ b/patches/httplib.h.patch
+@@ -0,0 +1,169 @@
++diff --git a/vendor/cpp-httplib/httplib.h b/vendor/cpp-httplib/httplib.h
++index 0aa4e62..cbc6ece 100644
++--- a/vendor/cpp-httplib/httplib.h
+++++ b/vendor/cpp-httplib/httplib.h
++@@ -7,6 +7,7 @@
++ 
++ #ifndef CPPHTTPLIB_HTTPLIB_H
++ #define CPPHTTPLIB_HTTPLIB_H
+++#endif
++ 
++ #define CPPHTTPLIB_VERSION "0.20.1"
++ 
++@@ -211,6 +212,9 @@ using socklen_t = int;
++ #endif
++ #ifdef __MVS__
++ #include <strings.h>
+++#include <zos-tls.h>
+++#include <sys/time.h>
+++#include <regex>
++ #ifndef NI_MAXHOST
++ #define NI_MAXHOST 1025
++ #endif
++@@ -2958,7 +2962,12 @@ inline std::string decode_url(const std::string &s,
++ 
++ inline std::string file_extension(const std::string &path) {
++   std::smatch m;
+++#ifdef __MVS__
+++  static __tlssim<std::regex> re_storage(std::regex("\\.([a-zA-Z0-9]+$"));
+++  std::regex& re = *re_storage.access();
+++#else
++   thread_local auto re = std::regex("\\.([a-zA-Z0-9]+)$");
+++#endif
++   if (std::regex_search(path, m, re)) { return m[1].str(); }
++   return std::string();
++ }
++@@ -5031,9 +5040,16 @@ public:
++             file_.content_type =
++                 trim_copy(header.substr(str_len(header_content_type)));
++           } else {
++-            thread_local const std::regex re_content_disposition(
+++#ifdef __MVS__
+++		static __tlssim<std::regex> re_content_disposition_storage(std::regex(
+++		R"~(^Content-Disposition:\s*form-data;\s*(.*)$)~",
+++		std::regex_constants::icase));
+++		std::regex& re_content_disposition = *re_content_disposition_storage.access();
+++#else
+++		thread_local const std::regex re_content_disposition(
++                 R"~(^Content-Disposition:\s*form-data;\s*(.*)$)~",
++                 std::regex_constants::icase);
+++#endif
++ 
++             std::smatch m;
++             if (std::regex_match(header, m, re_content_disposition)) {
++@@ -5054,8 +5070,14 @@ public:
++               it = params.find("filename*");
++               if (it != params.end()) {
++                 // Only allow UTF-8 encoding...
+++#ifdef __MVS__
+++		static __tlssim<std::regex> re_rfc_5987_encoding_storage(
+++			std::regex(R"~(^UTF-8''(.+?)$)~", std::regex_constants::icase));
+++		std::regex& re_rfc5987_encoding = *re_rfc_5987_encoding_storage.access();
+++#else
++                 thread_local const std::regex re_rfc5987_encoding(
++                     R"~(^UTF-8''(.+?)$)~", std::regex_constants::icase);
+++#endif
++ 
++                 std::smatch m2;
++                 if (std::regex_match(it->second, m2, re_rfc5987_encoding)) {
++@@ -5219,6 +5241,14 @@ inline std::string random_string(size_t length) {
++   constexpr const char data[] =
++       "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
++ 
+++#ifdef __MVS__
+++  static __tlssim<std::mt19937> engine_storage([]()  {
+++	std::random_device seed_gen;
+++	std::seed_seq seed_sequence{seed_gen(), seed_gen(), seed_gen(), seed_gen()};
+++	return std::mt19937(seed_sequence);
+++  }());
+++  std::mt19937& engine = *engine_storage.access();
+++#else
++   thread_local auto engine([]() {
++     // std::random_device might actually be deterministic on some
++     // platforms, but due to lack of support in the c++ standard library,
++@@ -5228,6 +5258,7 @@ inline std::string random_string(size_t length) {
++     std::seed_seq seed_sequence{seed_gen(), seed_gen(), seed_gen(), seed_gen()};
++     return std::mt19937(seed_sequence);
++   }());
+++#endif
++ 
++   std::string result;
++   for (size_t i = 0; i < length; i++) {
++@@ -5741,8 +5772,14 @@ inline bool parse_www_authenticate(const Response &res,
++                                    bool is_proxy) {
++   auto auth_key = is_proxy ? "Proxy-Authenticate" : "WWW-Authenticate";
++   if (res.has_header(auth_key)) {
+++#ifdef __MVS__
+++    static __tlssim<std::regex> re_storage(
+++	std::regex(R"~((?:(?:,\s*)?(.+?)=(?:"(.*?)"|([^,]*))))~"));
+++    std::regex& re = *re_storage.access();
+++#else
++     thread_local auto re =
++         std::regex(R"~((?:(?:,\s*)?(.+?)=(?:"(.*?)"|([^,]*))))~");
+++#endif
++     auto s = res.get_header_value(auth_key);
++     auto pos = s.find(' ');
++     if (pos != std::string::npos) {
++@@ -5826,7 +5863,12 @@ inline void hosted_at(const std::string &hostname,
++ inline std::string append_query_params(const std::string &path,
++                                        const Params &params) {
++   std::string path_with_query = path;
++-  thread_local const std::regex re("[^?]+\\?.*");
+++#ifdef __MVS__
+++  static __tlssim<std::regex> re_storage(std::regex("[^?]+\\?.*"));
+++  std::regex& re = *re_storage.access();
+++#else
+++  thread_local std::regex re("[^?]+\\?.*");
+++#endif
++   auto delm = std::regex_match(path, re) ? '&' : '?';
++   path_with_query += delm + detail::params_to_query_str(params);
++   return path_with_query;
++@@ -6602,9 +6644,16 @@ inline bool Server::parse_request_line(const char *s, Request &req) const {
++     if (count != 3) { return false; }
++   }
++ 
+++#ifdef __MVS__
+++  static __tlssim<std::set<std::string>> methods_storage(
+++	std::set<std::string>{"GET", "HEAD", "POST", "PUT", "DELETE",
+++		"CONNECT", "OPTIONS", "TRACE", "PATCH", "PRI"});
+++  std::set<std::string>& methods = *methods_storage.access();
+++#else
++   thread_local const std::set<std::string> methods{
++       "GET",     "HEAD",    "POST",  "PUT",   "DELETE",
++       "CONNECT", "OPTIONS", "TRACE", "PATCH", "PRI"};
+++#endif
++ 
++   if (methods.find(req.method) == methods.end()) { return false; }
++ 
++@@ -7603,7 +7652,16 @@ inline bool ClientImpl::read_response_line(Stream &strm, const Request &req,
++   if (!line_reader.getline()) { return false; }
++ 
++ #ifdef CPPHTTPLIB_ALLOW_LF_AS_LINE_TERMINATOR
+++#ifdef __MVS__
+++  static __tlssim<std::regex> re_storage(std::regex("(HTTP/1\\.[01]) (\\d{3})(?: (.*?))?\r?\n"));
+++  std::regex& re = *re_storage.access();
+++#else
++   thread_local const std::regex re("(HTTP/1\\.[01]) (\\d{3})(?: (.*?))?\r?\n");
+++#endif
+++#else
+++#ifdef __MVS__
+++  static __tlssim<std::regex> re_storage(std::regex("(HTTP/1\\.[01]) (\\d{3})(?: (.*?))?\r\n"));
+++  std::regex& re = *re_storage.access();
++ #else
++   thread_local const std::regex re("(HTTP/1\\.[01]) (\\d{3})(?: (.*?))?\r\n");
++ #endif
++@@ -7837,8 +7895,14 @@ inline bool ClientImpl::redirect(Request &req, Response &res, Error &error) {
++   auto location = res.get_header_value("location");
++   if (location.empty()) { return false; }
++ 
+++#ifdef __MVS__
+++  static __tlssim<std::regex> re_storage(
+++	std::regex(R"((?:https?):)?(?://(?:\[([a-fA-F\d:]+)\]|([^:/?#]+))(?::(\d+))?)?([^?#]*)(\?[^#]*)?(?:#.*)?)"));
+++  std::regex& re = *re_storage.access();
+++#else
++   thread_local const std::regex re(
++       R"((?:(https?):)?(?://(?:\[([a-fA-F\d:]+)\]|([^:/?#]+))(?::(\d+))?)?([^?#]*)(\?[^#]*)?(?:#.*)?)");
+++#endif
++ 
++   std::smatch m;
++   if (!std::regex_match(location, m, re)) { return false; }
+
+From 1061c524d29877c25526d7de581e220d3fed6dfe Mon Sep 17 00:00:00 2001
+From: Vyoman Jain <75789232+VyoJ@users.noreply.github.com>
+Date: Mon, 30 Jun 2025 10:04:20 +0530
+Subject: [PATCH 10/11] Removed old patches
+
+---
+ patches/PR1.patch                  | 236 -----------------------------
+ patches/simd.needsmoretestingpatch | 135 -----------------
+ 2 files changed, 371 deletions(-)
+ delete mode 100644 patches/PR1.patch
+ delete mode 100644 patches/simd.needsmoretestingpatch
+
+diff --git a/patches/PR1.patch b/patches/PR1.patch
+deleted file mode 100644
+index 30d443a..0000000
+--- a/patches/PR1.patch
++++ /dev/null
+@@ -1,236 +0,0 @@
+-diff --git a/examples/server/httplib.h b/examples/server/httplib.h
+-index 2874600..01882de 100644
+---- a/examples/server/httplib.h
+-+++ b/examples/server/httplib.h
+-@@ -172,7 +172,7 @@ using socket_t = SOCKET;
+- #else // not _WIN32
+- 
+- #include <arpa/inet.h>
+--#ifndef _AIX
+-+#if !defined(_AIX) && !defined(__MVS__)
+- #include <ifaddrs.h>
+- #endif
+- #include <net/if.h>
+-@@ -2804,7 +2804,7 @@ inline bool bind_ip_address(socket_t sock, const std::string &host) {
+-   return ret;
+- }
+- 
+--#if !defined _WIN32 && !defined ANDROID && !defined _AIX
+-+#if !defined _WIN32 && !defined ANDROID && !defined _AIX && !defined __MVS__
+- #define USE_IF2IP
+- #endif
+- 
+-diff --git a/ggml.c b/ggml.c
+-index 44c43b4..0061fab 100644
+---- a/ggml.c
+-+++ b/ggml.c
+-@@ -9,7 +9,7 @@
+- 
+- #if defined(_MSC_VER) || defined(__MINGW32__)
+- #include <malloc.h> // using malloc.h with MSC/MINGW
+--#elif !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__)
+-+#elif !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__MVS__)
+- #include <alloca.h>
+- #endif
+- 
+-@@ -197,10 +197,19 @@ typedef void * thread_ret_t;
+- #else
+- inline static void * ggml_aligned_malloc(size_t size) {
+-     void * aligned_memory = NULL;
+-+#ifdef __MVS__
+-+    if (size == 0)
+-+      size = 1;
+-+    aligned_memory = malloc(size);
+-+    int result = 0;
+-+    if (aligned_memory == NULL)
+-+      result = errno;
+-+#else
+- #ifdef GGML_USE_METAL
+-     int result = posix_memalign(&aligned_memory, getpagesize(), size);
+- #else
+-     int result = posix_memalign(&aligned_memory, GGML_MEM_ALIGN, size);
+-+#endif
+- #endif
+-     if (result != 0) {
+-         // Handle allocation failure
+-@@ -299,7 +308,7 @@ typedef double ggml_float;
+- #if defined(_MSC_VER) || defined(__MINGW32__)
+- #include <intrin.h>
+- #else
+--#if !defined(__riscv)
+-+#if !defined(__riscv) && !defined(__MVS__)
+- #include <immintrin.h>
+- #endif
+- #endif
+-diff --git a/k_quants.c b/k_quants.c
+-index 6348fce..756fee1 100644
+---- a/k_quants.c
+-+++ b/k_quants.c
+-@@ -26,7 +26,7 @@
+- #if defined(_MSC_VER) || defined(__MINGW32__)
+- #include <intrin.h>
+- #else
+--#if !defined(__riscv)
+-+#if !defined(__riscv) && !defined(__MVS__)
+- #include <immintrin.h>
+- #endif
+- #endif
+-diff --git a/llama-util.h b/llama-util.h
+-index 75e19c5..e80d755 100644
+---- a/llama-util.h
+-+++ b/llama-util.h
+-@@ -15,6 +15,9 @@
+- #include <string>
+- #include <vector>
+- #include <stdexcept>
+-+#ifdef __MVS__
+-+#include <sys/endian.h>
+-+#endif
+- 
+- #ifdef __has_include
+-     #if __has_include(<unistd.h>)
+-@@ -28,6 +31,42 @@
+-     #endif
+- #endif
+- 
+-+#ifdef BIG_ENDIAN
+-+#define LITTLE_TO_BIG_32(x) ((((x) & 0xFF000000U) >> 24) | \
+-+                             (((x) & 0x00FF0000U) >>  8) | \
+-+                             (((x) & 0x0000FF00U) <<  8) | \
+-+                             (((x) & 0x000000FFU) << 24))
+-+
+-+float ReverseFloat( const float inFloat )
+-+{
+-+  float retVal;
+-+  char *floatToConvert = ( char* ) & inFloat;
+-+  char *returnFloat = ( char* ) & retVal;
+-+
+-+  // swap the bytes into a temporary buffer
+-+  returnFloat[0] = floatToConvert[3];
+-+  returnFloat[1] = floatToConvert[2];
+-+  returnFloat[2] = floatToConvert[1];
+-+  returnFloat[3] = floatToConvert[0];
+-+
+-+  return retVal;
+-+}
+-+
+-+uint16_t ReverseShort( uint16_t inInt)
+-+{
+-+  uint16_t retVal;
+-+  char *intToConvert = ( char* ) & inInt;
+-+  char *returnInt = ( char* ) & retVal;
+-+
+-+  // swap the bytes into a temporary buffer
+-+  returnInt[0] = intToConvert[1];
+-+  returnInt[1] = intToConvert[0];
+-+
+-+  return retVal;
+-+}
+-+#endif
+-+
+-+
+- #if defined(_WIN32)
+-     #define WIN32_LEAN_AND_MEAN
+-     #ifndef NOMINMAX
+-@@ -118,6 +157,9 @@ struct llama_file {
+-     std::uint32_t read_u32() {
+-         std::uint32_t ret;
+-         read_raw(&ret, sizeof(ret));
+-+#ifdef BIG_ENDIAN
+-+        ret = LITTLE_TO_BIG_32(ret);
+-+#endif
+-         return ret;
+-     }
+- 
+-@@ -470,6 +512,13 @@ struct llama_buffer {
+-     void resize(size_t len) {
+- #ifdef GGML_USE_METAL
+-         free(addr);
+-+#ifdef __MVS__
+-+        addr = malloc(len);
+-+        int result = 0;
+-+        if (addr == NULL)
+-+          result = errno;
+-+        memset(addr, 0, len);
+-+#else
+-         int result = posix_memalign((void **) &addr, getpagesize(), len);
+-         if (result == 0) {
+-             memset(addr, 0, len);
+-@@ -477,6 +526,7 @@ struct llama_buffer {
+-         else {
+-             addr = NULL;
+-         }
+-+#endif
+- #else
+-         delete[] addr;
+-         addr = new uint8_t[len];
+-diff --git a/llama.cpp b/llama.cpp
+-index f2cbe76..c25e480 100644
+---- a/llama.cpp
+-+++ b/llama.cpp
+-@@ -574,6 +574,9 @@ struct llama_file_loader {
+- 
+-             float score = 0.0f;
+-             file.read_raw(&score, sizeof(score));
+-+#ifdef BIG_ENDIAN
+-+            score = ReverseFloat(score);
+-+#endif
+- 
+-             vocab.token_to_id[word] = i;
+- 
+-@@ -590,6 +593,13 @@ struct llama_file_loader {
+-             tensor.type = (enum ggml_type) file.read_u32();
+-             tensor.ne.resize(n_dims);
+-             file.read_raw(tensor.ne.data(), sizeof(tensor.ne[0]) * n_dims);
+-+#ifdef BIG_ENDIAN
+-+            // Convert the tensor metadata from little endian to big endian
+-+            for (size_t i = 0; i < n_dims; ++i) {
+-+              uint32_t* element = reinterpret_cast<uint32_t*>(tensor.ne.data() + i);
+-+              *element = LITTLE_TO_BIG_32(*element);
+-+            }    
+-+#endif
+-             std::string name = file.read_string(name_len);
+-             if (n_dims < 1 || n_dims > 2) {
+-                 throw std::runtime_error(format("llama.cpp: tensor '%s' should not be %u-dimensional", name.c_str(), n_dims));
+-@@ -706,6 +716,9 @@ struct llama_model_loader {
+-         if (!llama_mmap::SUPPORTED) {
+-             use_mmap = false;
+-         }
+-+#ifdef __MVS__
+-+        use_mmap = false;
+-+#endif
+-         this->use_mmap = use_mmap;
+-     }
+- 
+-@@ -833,10 +846,28 @@ struct llama_model_loader {
+-             llama_file & file = file_loader->file;
+-             file.seek(lt.file_off, SEEK_SET);
+-             file.read_raw(lt.data, lt.size);
+--        }
+- 
+--        if (0) {
+--            print_checksum(lt);
+-+#ifdef BIG_ENDIAN
+-+
+-+#define QK4_0 32
+-+            typedef struct {
+-+                ggml_fp16_t d;          // delta
+-+                uint8_t qs[QK4_0 / 2];  // nibbles / quants
+-+            } block_q4_0;
+-+
+-+            // Convert the tensor data from little endian to big endian
+-+            if (lt.type == GGML_TYPE_F32) 
+-+                for (size_t i = 0; i < (lt.size/4); ++i) {
+-+                      uint32_t* element = reinterpret_cast<uint32_t*>(lt.data) + i;
+-+                      *element = LITTLE_TO_BIG_32 (*element);
+-+                }    
+-+
+-+            if (lt.type == GGML_TYPE_Q4_0) 
+-+                for (size_t i = 0; i < (lt.size/sizeof(block_q4_0)); ++i) {
+-+                      block_q4_0* element = reinterpret_cast<block_q4_0*>(lt.data) + i;
+-+                      element->d = ReverseShort (element->d);
+-+                }    
+-+#endif
+-         }
+-     }
+- 
+diff --git a/patches/simd.needsmoretestingpatch b/patches/simd.needsmoretestingpatch
+deleted file mode 100644
+index 90ff904..0000000
+--- a/patches/simd.needsmoretestingpatch
++++ /dev/null
+@@ -1,135 +0,0 @@
+-diff --git a/ggml.c b/ggml.c
+-index 44c43b4..fedd4ca 100644
+---- a/ggml.c
+-+++ b/ggml.c
+-@@ -9,7 +9,7 @@
+- 
+- #if defined(_MSC_VER) || defined(__MINGW32__)
+- #include <malloc.h> // using malloc.h with MSC/MINGW
+--#elif !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__)
+-+#elif !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__MVS__)
+- #include <alloca.h>
+- #endif
+- 
+-@@ -197,10 +197,19 @@ typedef void * thread_ret_t;
+- #else
+- inline static void * ggml_aligned_malloc(size_t size) {
+-     void * aligned_memory = NULL;
+-+#ifdef __MVS__
+-+    if (size == 0)
+-+      size = 1;
+-+    aligned_memory = malloc(size);
+-+    int result = 0;
+-+    if (aligned_memory == NULL)
+-+      result = errno;
+-+#else
+- #ifdef GGML_USE_METAL
+-     int result = posix_memalign(&aligned_memory, getpagesize(), size);
+- #else
+-     int result = posix_memalign(&aligned_memory, GGML_MEM_ALIGN, size);
+-+#endif
+- #endif
+-     if (result != 0) {
+-         // Handle allocation failure
+-@@ -299,7 +308,7 @@ typedef double ggml_float;
+- #if defined(_MSC_VER) || defined(__MINGW32__)
+- #include <intrin.h>
+- #else
+--#if !defined(__riscv)
+-+#if !defined(__riscv) && !defined(__MVS__)
+- #include <immintrin.h>
+- #endif
+- #endif
+-@@ -583,7 +592,7 @@ int64_t ggml_cycles_per_ms(void) {
+- #if defined(__cpp_lib_hardware_interference_size)
+- #define CACHE_LINE_SIZE hardware_destructive_interference_size
+- #else
+--#if defined(__POWER9_VECTOR__)
+-+#if defined(__POWER9_VECTOR__) || defined(__MVS__)
+- #define CACHE_LINE_SIZE 128
+- #else
+- #define CACHE_LINE_SIZE 64
+-@@ -2051,10 +2060,11 @@ static inline void __avx_f32cx8_store(ggml_fp16_t *x, __m256 y) {
+- #define GGML_F16_VEC_MUL            GGML_F32Cx8_MUL
+- #define GGML_F16_VEC_REDUCE         GGML_F32Cx8_REDUCE
+- 
+--#elif defined(__POWER9_VECTOR__)
+-+#elif defined(__POWER9_VECTOR__) || defined(__MVS__)
+- 
+- #define GGML_SIMD
+- 
+-+
+- // F32 POWER9
+- 
+- #define GGML_F32_STEP 32
+-@@ -2066,21 +2076,23 @@ static inline void __avx_f32cx8_store(ggml_fp16_t *x, __m256 y) {
+- #define GGML_F32x4_LOAD(p)      vec_xl(0, p)
+- #define GGML_F32x4_STORE(p, r)  vec_xst(r, 0, p)
+- #define GGML_F32x4_FMA(a, b, c) vec_madd(b, c, a)
+--#define GGML_F32x4_ADD          vec_add
+--#define GGML_F32x4_MUL          vec_mul
+-+#define GGML_F32x4_ADD(a, b)    a+b
+-+//#define GGML_F32x4_MUL(a, b)    vec_madd(a, b, (vector float){0.0, 0.0,0.0, 0.0})
+-+#define GGML_F32x4_MUL(a, b)    a*b
+-+//#define GGML_F32x4_MUL(a, b)    __builtin_s390_vfmasb( a, b, a)
+- #define GGML_F32x4_REDUCE(res, x)              \
+- {                                              \
+-     int offset = GGML_F32_ARR >> 1;            \
+-     for (int i = 0; i < offset; ++i) {         \
+--        x[i] = vec_add(x[i], x[offset+i]);     \
+-+        x[i] = GGML_F32x4_ADD(x[i], x[offset+i]);     \
+-     }                                          \
+-     offset >>= 1;                              \
+-     for (int i = 0; i < offset; ++i) {         \
+--        x[i] = vec_add(x[i], x[offset+i]);     \
+-+        x[i] = GGML_F32x4_ADD(x[i], x[offset+i]);     \
+-     }                                          \
+-     offset >>= 1;                              \
+-     for (int i = 0; i < offset; ++i) {         \
+--        x[i] = vec_add(x[i], x[offset+i]);     \
+-+        x[i] = GGML_F32x4_ADD(x[i], x[offset+i]);     \
+-     }                                          \
+-     res = vec_extract(x[0], 0) +               \
+-           vec_extract(x[0], 1) +               \
+-@@ -2364,7 +2376,7 @@ static void ggml_vec_dot_f32(const int n, float * restrict s, const float * rest
+-     float sumf = 0.0f;
+-     const int np = (n & ~(GGML_F32_STEP - 1));
+- 
+--    GGML_F32_VEC sum[GGML_F32_ARR] = { GGML_F32_VEC_ZERO };
+-+    GGML_F32_VEC sum2[GGML_F32_ARR] = { GGML_F32_VEC_ZERO };
+- 
+-     GGML_F32_VEC ax[GGML_F32_ARR];
+-     GGML_F32_VEC ay[GGML_F32_ARR];
+-@@ -2374,12 +2386,12 @@ static void ggml_vec_dot_f32(const int n, float * restrict s, const float * rest
+-             ax[j] = GGML_F32_VEC_LOAD(x + i + j*GGML_F32_EPR);
+-             ay[j] = GGML_F32_VEC_LOAD(y + i + j*GGML_F32_EPR);
+- 
+--            sum[j] = GGML_F32_VEC_FMA(sum[j], ax[j], ay[j]);
+-+            sum2[j] = GGML_F32_VEC_FMA(sum2[j], ax[j], ay[j]);
+-         }
+-     }
+- 
+-     // reduce sum0..sum3 to sum0
+--    GGML_F32_VEC_REDUCE(sumf, sum);
+-+    GGML_F32_VEC_REDUCE(sumf, sum2);
+- 
+-     // leftovers
+-     for (int i = np; i < n; ++i) {
+-@@ -2399,7 +2411,7 @@ static void ggml_vec_dot_f32(const int n, float * restrict s, const float * rest
+- static void ggml_vec_dot_f16(const int n, float * restrict s, ggml_fp16_t * restrict x, ggml_fp16_t * restrict y) {
+-     ggml_float sumf = 0.0;
+- 
+--#if defined(GGML_SIMD)
+-+#if defined(GGML_SIMD) && !defined(__MVS__)
+-     const int np = (n & ~(GGML_F16_STEP - 1));
+- 
+-     GGML_F16_VEC sum[GGML_F16_ARR] = { GGML_F16_VEC_ZERO };
+-@@ -3437,7 +3449,7 @@ inline static void ggml_vec_dot_f16_unroll(const int n, const int xs, float * re
+-         x[i] = (ggml_fp16_t *) ((char *) xv + i*xs);
+-     }
+- 
+--#if defined(GGML_SIMD)
+-+#if defined(GGML_SIMD) && !defined(__MVS__)
+-     const int np = (n & ~(GGML_F16_STEP - 1));
+- 
+-     GGML_F16_VEC sum[GGML_VEC_DOT_UNROLL][GGML_F16_ARR] = { { GGML_F16_VEC_ZERO } };
+
+From e5bb1db5bc13fcc10b151064f9a79d0e65e82305 Mon Sep 17 00:00:00 2001
+From: namritha-maddali <namritha.maddali@gmail.com>
+Date: Thu, 3 Jul 2025 10:32:13 +0530
+Subject: [PATCH 11/11] updated buildenv
+
+---
+ buildenv | 49 ++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 32 insertions(+), 17 deletions(-)
+
+diff --git a/buildenv b/buildenv
+index 3ca2c7f..68766ee 100644
+--- a/buildenv
++++ b/buildenv
+@@ -1,21 +1,23 @@
+ export ZOPEN_BUILD_LINE="DEV"
+ export ZOPEN_STABLE_DEPS="zoslib make cmake curl"
+ export ZOPEN_DEV_URL="https://github.com/ggerganov/llama.cpp.git"
+-export ZOPEN_DEV_DEPS="zoslib make cmake curl openssl libssh2 zlib libpsl minja"
++export ZOPEN_DEV_DEPS="zoslib make cmake curl openssl libssh2 zlib libpsl"
+ export ZOPEN_CATEGORIES="ai"
+-export ZOPEN_DEV_TAG="b5610"
+-export ZOPEN_BUILD_LINE="DEV"
++export ZOPEN_DEV_TAG="master"
+ export ZOPEN_NAME="llamacpp-master"
+ export ZOPEN_RUNTIME_DEPS="ncurses"
+ 
+-rm -f "llama"
+-ln -s "llama.cpp" "llama"
+-ln -s "llama.cpp" $ZOPEN_NAME
++# rm -f "llama"
++# ln -s "llama.cpp" "llama"
++# ln -s "llama.cpp" $ZOPEN_NAME
+ 
+ export ZOPEN_COMP="CLANG"
++# set env variables
++# export CURL_HOME="/data/zopen/usr/local/zopen/curl/curl"
++# export BLAS_HOME="/usr/lpp/cbclib"
+ 
+ export ZOPEN_CONFIGURE="cmake"
+-export ZOPEN_CONFIGURE_OPTS="-B ../build --install-prefix \"\$ZOPEN_INSTALL_DIR/\" -DCURL_LIBRARY=/data/zopen/usr/local/zopen/curl/curl/lib/libcurl.a -DCURL_INCLUDE_DIR=/data/zopen/usr/local/zopen/curl/curl/include -DBUILD_SHARED_LIBS_DEFAULT=OFF -DBUILD_SHARED_LIBS=OFF -DGGML_STATIC=ON -DGGML_BACKEND_DL=OFF -DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS -DBLAS_INCLUDE_DIRS=/usr/lpp/cbclib/include/openblas -DBLAS_LIBRARIES=/usr/lpp/cbclib/lib/libopenblas.so ."
++export ZOPEN_CONFIGURE_OPTS="-B ../build --install-prefix \"\$ZOPEN_INSTALL_DIR/\" -DCURL_LIBRARY=\$CURL_HOME/lib/libcurl.a -DCURL_INCLUDE_DIR=\$CURL_HOME/include -DBUILD_SHARED_LIBS_DEFAULT=OFF -DBUILD_SHARED_LIBS=OFF -DGGML_STATIC=ON -DGGML_BACKEND_DL=OFF -DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS -DBLAS_INCLUDE_DIRS=\$BLAS_HOME/include/openblas -DBLAS_LIBRARIES=\$BLAS_HOME/lib/libopenblas.so -DLLAMA_BUILD_TESTS=ON ."
+ 
+ export ZOPEN_MAKE="cmake"
+ export ZOPEN_MAKE_OPTS="--build ../build --parallel \$ZOPEN_NUM_JOBS --config Release"
+@@ -24,14 +26,13 @@ export ZOPEN_MAKE_MINIMAL=Y
+ export ZOPEN_INSTALL="cmake"
+ export ZOPEN_INSTALL_OPTS="--install ../build"
+ 
+-# Needs more testing
+-if false; then
+-  export ZOPEN_EXTRA_CPPFLAGS="-DGGML_USE_OPENBLAS -I /home/itodoro/projects/openblas/openblas/include/openblas -mvx -mzvector -march=z15"
+-  export ZOPEN_EXTRA_LIBS="/home/itodoro/projects/openblas/openblas/libopenblas.x"
+-fi
++export ZOPEN_CHECK="ctest"
++export ZOPEN_CHECK_OPTS="--test-dir ../build  --output-on-failure"
+ 
+-export ZOPEN_CHECK="skip"
+-# export ZOPEN_CHECK_OPTS="-B build -DLLAMA_BUILD_TESTS=ON"
++# if false; then
++#  export ZOPEN_EXTRA_CPPFLAGS="-DGGML_USE_OPENBLAS -I /home/itodoro/projects/openblas/openblas/include/openblas -mvx -mzvector -march=z15"
++#  export ZOPEN_EXTRA_LIBS="/home/itodoro/projects/openblas/openblas/libopenblas.x"
++# fi
+ 
+ zopen_check_results()
+ {
+@@ -39,11 +40,25 @@ zopen_check_results()
+   pfx="$2"
+   chk="$1/$2_check.log"
+ 
++  if [[ -f "$chk" ]]; then
++    total=$(grep -cE "Test #[0-9]+" "$chk")
++    failed=$(grep -cE "Failed|Subprocess aborted" "$chk")
++    skipped=$(grep -c "Skipped" "$chk")
++    passed=$((total - failed - skipped))
++  else
++    total=0
++    passed=0
++    failed=0
++    skipped=0
++  fi
++
+   # Echo the following information to gauge build health
+-  echo "actualFailures:0"
+-  echo "totalTests:1"
++  echo "actualFailures:$failed"
++  echo "actualPassed:$passed"
++  echo "actualSkipped:$skipped"
++  echo "totalTests:$total"
+   echo "expectedFailures:0"
+-  echo "expectedTotalTests:1"
++  echo "expectedTotalTests:$total"
+ }
+ 
+ zopen_append_to_env()

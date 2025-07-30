@@ -1,0 +1,192 @@
+# Update bump details accordingly. Use bump check to confirm.
+# bump: stable_diffusion-version /STABLE_DIFFUSION_VERSION="(.*)"/ https://github.com/leejet/stable-diffusion.cpp.git|semver:*
+# STABLE_DIFFUSION_VERSION="V.R.M" # Specify a stable release
+# export ZOPEN_STABLE_TAG="v${STABLE_DIFFUSION_VERSION}"
+
+###
+### Build control file for the stable_diffusion port
+###
+
+###
+### Required Environment Variables
+###
+
+## Specify the default build line, either 'DEV' or 'STABLE' (default: STABLE)
+export ZOPEN_BUILD_LINE="STABLE"
+
+## Required IF ZOPEN_BUILD_LINE='STABLE'
+export ZOPEN_STABLE_URL="https://github.com/leejet/stable-diffusion.cpp.git"  # Specify the stable build URL (either git or tarball)
+export ZOPEN_STABLE_DEPS="zoslib make cmake ninja git curl sed patch coreutils pkgconfig zlib bzip2 xz" # Specify the stable build dependencies.
+
+ln -fs "stable-diffusion.cpp" "stable-diffusion"
+
+## Required IF ZOPEN_BUILD_LINE='DEV'
+export ZOPEN_DEV_URL=""   # Specify the dev build URL
+export ZOPEN_DEV_DEPS=""  # Specify the dev build dependencies
+
+## Specify a space-delimited list of applicable categories.
+## See tool_categories.txt for valid options
+export ZOPEN_CATEGORIES="ai"
+
+## Runtime zopen tool dependencies to be installed alongside the tool.
+export ZOPEN_RUNTIME_DEPS=""
+
+## Cmake Configurations
+export ZOPEN_CONFIGURE="cmake"
+export ZOPEN_CONFIGURE_OPTS="-B ../build --install-prefix \"\$ZOPEN_INSTALL_DIR/\" ."
+
+export ZOPEN_MAKE="cmake"
+export ZOPEN_MAKE_OPTS="--build ../build --parallel \$ZOPEN_NUM_JOBS --config Release"
+export ZOPEN_MAKE_MINIMAL=Y
+
+export ZOPEN_INSTALL="cmake"
+export ZOPEN_INSTALL_OPTS="--install ../build"
+
+
+## Runtime system prerequisites; supply the name of the system pre-requisties.
+## Current available prerequisites: zos24 zos25 zos31 procfs (see https://github.com/zopencommunity/meta/blob/main/include/prereq.sh for a current list)
+export ZOPEN_SYSTEM_PREREQ=""
+
+
+###
+### Build stage control environment variables
+###
+
+#export ZOPEN_BOOTSTRAP="skip" ## Bootstrap program to run (defaults to './bootstrap')
+#export ZOPEN_CHECK="skip"     ## Check program to run (defaults to 'make')
+#export ZOPEN_CONFIGURE="skip" ## Configuration program to run (defaults to './configure')
+#export ZOPEN_INSTALL="skip"   ## Installation program to run (defaults to 'make')
+#export ZOPEN_MAKE="skip"      ## Build program to run (defaults to 'make')
+#export ZOPEN_CLEAN=""         ## Clean up program to run (defaults to 'make')
+
+
+###
+### Required user-supplied functions
+###
+
+zopen_check_results()
+{
+  dir="$1"
+  pfx="$2"
+  chk="$1/$2_check.log"
+
+  # Echo the following information to gauge build health
+  echo "actualFailures:0"
+  echo "totalTests:1"
+  echo "expectedFailures:0"
+  echo "expectedTotalTests:1"
+}
+
+zopen_get_version()
+{
+  # Modify to echo the version of your tool/library
+  # Rather than hardcoding the version, obtain the version by running the tool/library
+  echo "1.0.0"
+}
+
+
+###
+### Optional user-supplied functions for zopen-build
+###
+
+#zopen_append_to_env() {
+  ## This function runs as part of generation of the .env file. The output of the
+  ## function is appended to .env.
+#}
+
+#zopen_append_to_setup(){
+  ## This function runs as part of generation of the setup.sh file. The output of
+  ## the function is appended to setup.sh.
+#}
+
+#zopen_append_to_validate_install(){
+  ## This function runs as part of generation of the install_test.sh file. The
+  ## output of the function is appended to install_test.sh script.
+#}
+
+#zopen_install_caveats(){
+  ## This function is run post install. All stdout messages are captured and
+  ## added to the metadata.json as installation caveats.
+#}
+
+#zopen_append_to_zoslib_env(){
+  ## This function runs as part of generation of the C function zoslib_env_hook,
+  ## which can be used to set environment variables before main is run.
+#}
+
+#zopen_init(){
+  ## This function runs after code is downloaded and patched but before the code
+  ## is built.
+#}
+
+#zopen_post_buildenv(){
+  ## This function runs after the 'buildenv' is processed.
+#}
+
+#zopen_pre_build(){
+  ## This function runs before the 'make' step of the build is run.
+#}
+
+#zopen_pre_check(){
+  ## This function runs before the 'check' step of the build is run.
+#}
+
+#zopen_pre_configure(){
+  ## This function runs before the 'configure' step of the build is run.
+#}
+
+#zopen_pre_install(){
+  ## This function runs before the 'install' step of the build is run.
+#}
+
+#zopen_post_install(){
+  ## This function runs after the 'install' step of the build is run.
+#}
+
+#zopen_pre_patch(){
+  ## This function runs before the 'patch' step of the build is run.
+#}
+
+#zopen_pre_terminate(){
+  ## This function runs before 'zopen build' terminates.
+#}
+
+
+###
+### Optional build control variables
+###
+
+#export ZOPEN_EXTRA_CFLAGS="" ## C compiler flags to append to CFLAGS (defaults to '').
+#export ZOPEN_EXTRA_CPPFLAGS="" ## C,C++ pre-processor flags to append to CPPFLAGS (defaults to '')
+#export ZOPEN_EXTRA_CXXFLAGS="" ## C++ compiler flags to append to CXXFLAGS (defaults to '')
+#export ZOPEN_EXTRA_LDFLAGS="" ## C,C++ linker flags to append to LDFLAGS (defaults to '')
+#export ZOPEN_EXTRA_LIBS="" ## C,C++ libraries to append to LIBS (defaults to '')
+#export ZOPEN_BOOTSTRAP_OPTS="" ## Options to pass to bootstrap program (defaults to '')
+#export ZOPEN_CHECK_MINIMAL="" ## Check program will not be passed CFLAGS, LDFLAGS, CPPFLAGS options but will get them from env vars.
+#export ZOPEN_CHECK_OPTS="" ## Options to pass to check program (defaults to 'check')
+#export ZOPEN_CHECK_TIMEOUT="" ## Timeout limit in seconds for the check program (defaults to '12600' # 3.5 hours)
+#export ZOPEN_CLEAN_OPTS="" ## Options to pass to clean up  program (defaults to 'clean')
+#export ZOPEN_CONFIGURE_MINIMAL="" ## Configuration program will not be passed CFLAGS, LDFLAGS, CPPFLAGS options but will get them from env vars.
+#export ZOPEN_CONFIGURE_OPTS="" ## Options to pass to configuration program (defaults to '--prefix=')
+#export ZOPEN_EXTRA_CONFIGURE_OPTS="" ## Extra configure options to pass to configuration program. (defaults to '')
+#export ZOPEN_INSTALL_OPTS="" ## Options to pass to installation program (defaults to 'install')
+#export ZOPEN_MAKE_MINIMAL="" ## Build program will not be passed CFLAGS, LDFLAGS, CPPFLAGS options but will get them from env vars.
+#export ZOPEN_MAKE_OPTS="" ## Options to pass to build program (defaults to '-j')
+#export ZOPEN_PATCH_DIR="" ## Specify directory from which patches should be applied.
+
+
+###
+### Restricted Usage - only set in ports if necessary
+###
+
+## Don't add zoslib as a dependency; most ports should keep this unset
+#export ZOPEN_DONT_ADD_ZOSLIB_DEP=1
+
+
+###
+### Additional user-defined custom code  - runs during script source
+###
+
+## Add user-defined functions and code
+
+

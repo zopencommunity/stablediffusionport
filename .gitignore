@@ -1,6 +1,43 @@
-log/
-log.DEV/
-log.STABLE/
-build/
+# Build artifacts
+*.o
+*.so
+*.a
+build/bin/
+build/lib/
+build/CMakeCache.txt
+build/CMakeFiles/
+build/Makefile
+build/cmake_install.cmake
+build_log.txt
+
+# Large model files (users download separately)
+*.gguf
+*.safetensors
+*.bin
+models/*.gguf
+models/*.safetensors
+models/*.bin
+
+# Generated images and temporary files
+*.png
+*.jpg
+*.jpeg
+test_*
+temp_transfer/
+landscape_*.txt
+
+# Personal/local files
+.DS_Store
+*.swp
+*.tmp
+dead.letter
 install/
-.zoslib_hooks/*.o
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+
+# System files
+.zopen-config
+core.*
