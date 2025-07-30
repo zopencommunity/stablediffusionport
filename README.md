@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [![Automatic version updates](https://github.com/zopencommunity/stable_diffusionport/actions/workflows/bump.yml/badge.svg)](https://github.com/ZOSOpenTools/stable_diffusionport/actions/workflows/bump.yml)
 
 # stable_diffusion
@@ -32,3 +33,7 @@ See the [zopen porting guide](https://zopen.community/#/Guides/Porting) for more
 
 # Contributing
 Contributions are welcome! Please follow the [zopen contribution guidelines](https://github.com/zopencommunity/meta/blob/main/CONTRIBUTING.md).
+=======
+# stablediffusionport
+Stable Diffusion text to image AI model port for IBM z/OS mainframe systems
+>>>>>>> 2ad65447052aa017033ad025cfb23893b17232d5
