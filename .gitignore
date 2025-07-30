@@ -43,3 +43,8 @@ transfer/
 *.tmp
 *.temp
 *_temp.*
+
+# Allow zoslib source files but ignore compiled objects
+!.zoslib_hooks/*.c
+.zoslib_hooks/*.o
+.zoslib_hooks/*.obj

@@ -1,1 +1,7 @@
+# Handle shell scripts properly
+*.sh text eol=lf
+build.sh text eol=lf
+
+# Handle z/OS library files
+.zoslib_hooks/*.c text
 .zoslib_hooks/*.o binary
