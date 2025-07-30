@@ -1,0 +1,49 @@
+
+# Compiled object files and binaries
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.a
+*.lib
+
+# z/OS library hooks compiled files
+.zoslib_hooks/*.o
+.zoslib_hooks/*.obj
+
+# Other build artifacts
+*.out
+core.*
+
+# Image and media files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.svg
+
+# Assets and example directories
+assets/
+examples/
+stable-diffusion.cpp/assets/
+stable-diffusion.cpp/examples/
+
+# Demo and test files
+*test*.png
+*example*.jpg
+*demo*.png
+
+# Temporary directories and transfer files
+temp/
+tmp/
+temp_transfer/
+*_transfer/
+transfer/
+
+# Temporary files
+*.tmp
+*.temp
+*_temp.*
