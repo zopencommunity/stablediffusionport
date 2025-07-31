@@ -1,6 +1,6 @@
 # Update bump details accordingly. Use bump check to confirm.
 # bump: stable_diffusion-version /STABLE_DIFFUSION_VERSION="(.*)"/ https://github.com/leejet/stable-diffusion.cpp.git|semver:*
-# STABLE_DIFFUSION_VERSION="V.R.M" # Specify a stable release
+# STABLE_DIFFUSION_VERSION="9251756" # Specify a stable release
 # export ZOPEN_STABLE_TAG="v${STABLE_DIFFUSION_VERSION}"
 
 ###
